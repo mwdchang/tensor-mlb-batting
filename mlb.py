@@ -32,9 +32,11 @@ for key in batters:
     continue 
   batters_array.append(batter)
   
+# Shuffle data
 np.random.shuffle(batters_array)
 
-# Remove batters with too few at-bats
+
+# Divide into features and target
 for batter in batters_array:
   raw_feature.append([
     batter["H"],
@@ -58,45 +60,40 @@ test_y = raw_target[cut:]
 
 train_data = Dataset(data=train_x, target=train_y)
 test_data = Dataset(data=test_x, target=test_y)
-
 print('data', len(train_x), len(train_y), len(test_x), len(test_y))
 
 
 def create_input_fn(data, train=True):
-    epoch = None
-    shuffle = True
+  epoch = None
+  shuffle = True
 
-    if (train == False):
-        epoch = 1
-        shuffle = False
+  if (train == False):
+    epoch = 1
+    shuffle = False
 
-    input = tf.estimator.inputs.numpy_input_fn(
-      x = {"x": np.array(data.data)},
-      y = np.array(data.target),
-      num_epochs = epoch, shuffle = shuffle)
-    return input
-
-
-
-# train = tf.contrib.learn.datasets.base.load_csv_without_header(
-#   filename="mlb-data.csv",
-#   target_dtype=np.int,
-#   features_dtype=np.int)
+  input = tf.estimator.inputs.numpy_input_fn(
+    x = {"x": np.array(data.data)},
+    y = np.array(data.target),
+    num_epochs = epoch, shuffle = shuffle)
+  return input
 
 
+
+# Model
 feature_columns = [tf.feature_column.numeric_column("x", shape=[6])]
-
 classifier = tf.estimator.DNNClassifier(
   feature_columns=feature_columns,
   hidden_units=[10, 30, 10],
   n_classes=4,
   model_dir="save")
 
-#train_input_fn = create_input_fn(train, train=True)
+
+# Train
 train_input_fn = create_input_fn(train_data, train=True)
 classifier.train(input_fn=train_input_fn, steps=2000)
 
 
+# Accuracy
 test_input_fn = create_input_fn(test_data, train=False)
 accuracy_score = classifier.evaluate(input_fn=test_input_fn)["accuracy"]
 print("\nTest Accuracy: {0:f}\n".format(accuracy_score))
