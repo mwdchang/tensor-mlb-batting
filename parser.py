@@ -103,6 +103,7 @@ def processBatting():
         pass
       else:
         players[id] = {}
+        players[id]["_id"] = id
   
       incr(id, "AB", ab)
       incr(id, "R", r)

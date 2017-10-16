@@ -9,6 +9,32 @@ import sys
 import collections
 Dataset = collections.namedtuple('Dataset', ['data', 'target'])
 
+from flask import Flask, request, jsonify
+
+
+def dict2List(batter):
+  return [
+    batter["H"],
+    batter["2B"],
+    batter["3B"],
+    batter["HR"],
+    batter["RBI"],
+    batter["R"]
+  ]
+
+def create_input_fn(data, train=True):
+  epoch = None
+  shuffle = True
+
+  if (train == False):
+    epoch = 1
+    shuffle = False
+
+  input = tf.estimator.inputs.numpy_input_fn(
+    x = {"x": np.array(data.data)},
+    y = np.array(data.target),
+    num_epochs = epoch, shuffle = shuffle)
+  return input
 
 
 rankings = parser.processHoF()
@@ -38,14 +64,7 @@ np.random.shuffle(batters_array)
 
 # Divide into features and target
 for batter in batters_array:
-  raw_feature.append([
-    batter["H"],
-    batter["2B"],
-    batter["3B"],
-    batter["HR"],
-    batter["RBI"],
-    batter["R"]
-  ])
+  raw_feature.append(dict2List(batter))
   raw_target.append([
     batter["RANK"]
   ])
@@ -63,22 +82,6 @@ test_data = Dataset(data=test_x, target=test_y)
 print('data', len(train_x), len(train_y), len(test_x), len(test_y))
 
 
-def create_input_fn(data, train=True):
-  epoch = None
-  shuffle = True
-
-  if (train == False):
-    epoch = 1
-    shuffle = False
-
-  input = tf.estimator.inputs.numpy_input_fn(
-    x = {"x": np.array(data.data)},
-    y = np.array(data.target),
-    num_epochs = epoch, shuffle = shuffle)
-  return input
-
-
-
 # Model
 feature_columns = [tf.feature_column.numeric_column("x", shape=[6])]
 classifier = tf.estimator.DNNClassifier(
@@ -89,31 +92,50 @@ classifier = tf.estimator.DNNClassifier(
 
 
 # Train
+print("Training...")
 train_input_fn = create_input_fn(train_data, train=True)
 classifier.train(input_fn=train_input_fn, steps=2000)
 
 
 # Accuracy
+print("Checking accuracy")
 test_input_fn = create_input_fn(test_data, train=False)
 accuracy_score = classifier.evaluate(input_fn=test_input_fn)["accuracy"]
 print("\nTest Accuracy: {0:f}\n".format(accuracy_score))
 
 
-# new_samples = np.array(
-#       [
-#        [9800, 70, 15, 50, 800, 1200],
-#        [1300, 30, 10, 10, 140, 500],
-#       ], dtype=np.int)
-# 
-# predict_input_fn = tf.estimator.inputs.numpy_input_fn(
-#       x={"x": new_samples},
-#       num_epochs=1,
-#       shuffle=False)
-# 
-# predictions = list(classifier.predict(input_fn=predict_input_fn))
-# print("predictions", predictions)
-# 
-# predicted_classes = [p["classes"] for p in predictions]
-# print("New Samples, Class Predictions: {}\n".format(predicted_classes))
+
+# Flask
+app = Flask(__name__, static_url_path='', static_folder='')
+
+@app.route('/sample')
+def sample():
+  sample = np.random.choice(batters_array, 4)
+  sample_array = []
+  for batter in sample:
+    sample_array.append(dict2List(batter))
+  new_samples = np.array(sample_array, dtype=np.int)
+  predict_input_fn = tf.estimator.inputs.numpy_input_fn( 
+    x={"x": new_samples},
+    num_epochs=1,
+    shuffle=False)
+  predictions = list(classifier.predict(input_fn=predict_input_fn))
+  probs = [p["probabilities"].tolist() for p in predictions]
+
+  c = 0
+  for batter in sample:
+    batter["_pred"] = probs[c]
+    c = c + 1
+  return jsonify(list(sample))
+
+
+  
+@app.route('/')
+def root():
+  return app.send_static_file('index.html')
+
+
+if __name__ == '__main__':  # pragma: no cover
+  app.run(port=5000)
 
 
