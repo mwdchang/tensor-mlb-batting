@@ -1,6 +1,8 @@
 ### TensorFlow MLB Batting
 TensorFlow NN for classifying batters.
 
+![Example](example.png)
+
 ### Method
 Players need at least 1000 at bats and are divided among 4 levels.
 - 4: HoF

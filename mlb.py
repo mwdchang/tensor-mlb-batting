@@ -110,7 +110,7 @@ app = Flask(__name__, static_url_path='', static_folder='')
 
 @app.route('/sample')
 def sample():
-  sample = np.random.choice(batters_array, 3000)
+  sample = np.random.choice(batters_array, 25)
   sample_array = []
   for batter in sample:
     sample_array.append(dict2List(batter))
