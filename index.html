@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tensorflow MLB Battters </title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.4.2/vue.min.js"></script>
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body> 
+  <section id="app">
+    <h4>MLB Batters Classification - Tensorflow</h4>
+    <p>
+      ANN Classification of MLB batters with TensorFlow, training is done with career statistics and hall-of-fame (HoF) ballot results.
+      Each batter is given one of four classifications:
+      <ul>
+        <li>(Level 4) Player is in HoF</li>
+        <li>(Level 3) Recevied at least 20% of HoF ballots in any year but dropped off</li>
+        <li>(Level 2) Appeared on the ballots</li>
+        <li>(Level 1) None of the above</li>
+      </ul>
+    </p>
+    <p>
+      * This is a very naive approach, with accuracy rate hovering around 0.75 to 0.85. The data are taken and trained as-is, without further
+      domain knowledge to improve the data quality prior to training. For example: HoF pitchers whom are awful batters will 
+      skew the overall ranking "correctness".
+    </p>
+    <br>
+    <div>
+      Random sample of players
+      <a href="#" onClick="sample()">New sample</a>
+    </div>
+    <br>
+    <table>
+      <tbody>
+        <tr>
+          <td style="text-align:left">Name</td>
+          <td>H</td>
+          <td>2B</td>
+          <td>3B</td>
+          <td>HR</td>
+          <td>RBI</td>
+          <td>R</td>
+          <td>Real Level</td>
+          <td>% Level1</td>
+          <td>% Level2</td>
+          <td>% Level3</td>
+          <td>% Level4</td>
+        </tr>
+        <tr v-for="b in samples" v-if="samples.length > 0">
+          <td style="text-align:left">{{b._name}}</td>
+          <td>{{b.H}}</td>
+          <td>{{b['2B']}}</td>
+          <td>{{b['3B']}}</td>
+          <td>{{b.HR}}</td>
+          <td>{{b.RBI}}</td>
+          <td>{{b.R}}</td>
+          <td>{{b.RANK}}</td>
+          <td v-for="(p, idx) in b._pred" v-bind:style="{background: idx  == b._maxIdx? '#8BE' : ''}">
+            {{p.toFixed(2)}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+  </section>
+</body>
+<script>
+
+let appData = {
+  samples: []
+}
+
+let vm = new Vue({ 
+  el: '#app', 
+  data: appData
+});
+
+console.log('vm', vm);
+
+
+function sample() {
+  fetch('/sample').then( d=> d.json()).then( data => {
+
+    data.forEach( d => {
+      let maxIdx = 0;
+      let max = 0;
+      d._pred.forEach( (p, i) => {
+        if (p > max) {
+          maxIdx = i;
+          max = p;
+        }
+      })
+      d._maxIdx = maxIdx;
+    })
+
+    appData.samples = data
+  })
+}
+
+sample()
+
+</script>
+</html>

@@ -71,7 +71,7 @@ for batter in batters_array:
 
 
 # Split 
-cut = 3200
+cut = 3300
 train_x = raw_feature[:cut]
 train_y = raw_target[:cut]
 test_x = raw_feature[cut:]
@@ -110,7 +110,7 @@ app = Flask(__name__, static_url_path='', static_folder='')
 
 @app.route('/sample')
 def sample():
-  sample = np.random.choice(batters_array, 4)
+  sample = np.random.choice(batters_array, 10)
   sample_array = []
   for batter in sample:
     sample_array.append(dict2List(batter))
@@ -125,6 +125,7 @@ def sample():
   c = 0
   for batter in sample:
     batter["_pred"] = probs[c]
+    batter["_name"] = people[batter["_id"]]
     c = c + 1
   return jsonify(list(sample))
 
