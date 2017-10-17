@@ -5,7 +5,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.4.2/vue.min.js"></script>
   <link href="styles.css" rel="stylesheet">
 </head>
-<body> 
+<body>
   <section id="app">
     <h4>MLB Batters Classification - Tensorflow</h4>
     <p>
@@ -20,7 +20,7 @@
     </p>
     <p>
       * This is a very naive approach, with accuracy rate hovering around 0.75 to 0.85. The data are taken and trained as-is, without further
-      domain knowledge to improve the data quality prior to training. For example: HoF pitchers whom are awful batters will 
+      domain knowledge to improve the data quality prior to training. For example: HoF pitchers whom are awful batters will
       skew the overall ranking "correctness".
     </p>
     <br>
@@ -53,7 +53,7 @@
           <td>{{b.HR}}</td>
           <td>{{b.RBI}}</td>
           <td>{{b.R}}</td>
-          <td>{{b.RANK}}</td>
+          <td>{{b.RANK + 1}}</td>
           <td v-for="(p, idx) in b._pred" v-bind:style="{background: idx  == b._maxIdx? '#8BE' : ''}">
             {{p.toFixed(2)}}
           </td>
@@ -69,8 +69,8 @@ let appData = {
   samples: []
 }
 
-let vm = new Vue({ 
-  el: '#app', 
+let vm = new Vue({
+  el: '#app',
   data: appData
 });
 

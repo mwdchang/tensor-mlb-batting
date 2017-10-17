@@ -55,9 +55,9 @@ for key in batters:
     batter["RANK"] = rankings[key]
 
   if batter["AB"] < 1000:
-    continue 
+    continue
   batters_array.append(batter)
-  
+
 # Shuffle data
 np.random.shuffle(batters_array)
 
@@ -70,7 +70,7 @@ for batter in batters_array:
   ])
 
 
-# Split 
+# Split
 cut = 3300
 train_x = raw_feature[:cut]
 train_y = raw_target[:cut]
@@ -110,12 +110,12 @@ app = Flask(__name__, static_url_path='', static_folder='')
 
 @app.route('/sample')
 def sample():
-  sample = np.random.choice(batters_array, 10)
+  sample = np.random.choice(batters_array, 3000)
   sample_array = []
   for batter in sample:
     sample_array.append(dict2List(batter))
   new_samples = np.array(sample_array, dtype=np.int)
-  predict_input_fn = tf.estimator.inputs.numpy_input_fn( 
+  predict_input_fn = tf.estimator.inputs.numpy_input_fn(
     x={"x": new_samples},
     num_epochs=1,
     shuffle=False)
@@ -130,7 +130,7 @@ def sample():
   return jsonify(list(sample))
 
 
-  
+
 @app.route('/')
 def root():
   return app.send_static_file('index.html')
@@ -138,5 +138,3 @@ def root():
 
 if __name__ == '__main__':  # pragma: no cover
   app.run(port=5000)
-
-
