@@ -1,6 +1,6 @@
 
 def _clean(data):
-  for x in xrange(len(data)):
+  for x in range(len(data)):
     if data[x] == "" and x > 0:
       data[x] = 0
 
@@ -85,7 +85,7 @@ def processBatting():
         continue
   
       data = line.split(",")
-      for x in xrange(len(data)):
+      for x in range(len(data)):
         if data[x] == "" and x > 0:
           data[x] = 0
   
